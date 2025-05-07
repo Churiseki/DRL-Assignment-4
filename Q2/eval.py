@@ -55,7 +55,7 @@ def eval_score():
     print(f"Observation space: {env.observation_space}")
     
     # Load student's agent
-    agent = load_agent("student_agent.py")
+    agent = load_agent("Q2/student_agent.py")
     
     if args.record_demo:
         record_video(env, agent)

@@ -1,6 +1,3 @@
-import gymnasium
-import numpy as np
-
 import numpy as np
 import torch
 import os
@@ -131,22 +128,39 @@ class DDPGAgent:
         self.critic_target.load_state_dict(self.critic.state_dict())
         print("load successfully")
 
-env_name="cartpole-balance"
-env = make_dmc_env(env_name, seed=0, flatten=True, use_pixels=False)
-state_dim = env.observation_space.shape[0]
-action_dim = env.action_space.shape[0]
-max_action = float(env.action_space.high[0])
+# 訓練主程式
+def train_ddpg(env_name="cartpole-balance", episodes=1000, save_every=50):
+    env = make_dmc_env(env_name, seed=0, flatten=True, use_pixels=False)
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.shape[0]
+    max_action = float(env.action_space.high[0])
 
-agent = DDPGAgent(state_dim, action_dim, max_action)
-checkpoint_dir = f"Q2/checkpoints/ddpg_{env_name}"
-agent.load(checkpoint_dir)
+    agent = DDPGAgent(state_dim, action_dim, max_action)
+    checkpoint_dir = f"Q2/checkpoints/ddpg_{env_name}"
+    agent.load(checkpoint_dir)
 
+    for ep in tqdm(range(episodes)):
+        state, _ = env.reset()
+        ep_reward = 0
+        for t in range(1000):  # 可以根據 task 調整步數上限
+            action = agent.select_action(state)
+            action = (action + np.random.normal(0, 0.1, size=action_dim)).clip(-max_action, max_action)
 
-# Do not modify the input of the 'act' function and the '__init__' function. 
-class Agent(object):
-    """Agent that acts randomly."""
-    def __init__(self):
-        self.action_space = gymnasium.spaces.Box(-1.0, 1.0, (1,), np.float64)
+            next_state, reward, done, _, _ = env.step(action)
+            agent.replay_buffer.push(state, action, reward, next_state, float(done))
+            agent.train()
+            state = next_state
+            ep_reward += reward
 
-    def act(self, observation):
-        return agent.select_action(observation)
+            if done:
+                break
+        
+        if (ep+1) % save_every == 0:
+            agent.save(checkpoint_dir)
+
+        print(f"Episode {ep}, Reward: {ep_reward:.2f}")
+
+    env.close()
+
+if __name__ == "__main__":
+    train_ddpg()

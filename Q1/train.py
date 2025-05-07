@@ -1,24 +1,7 @@
-import gymnasium
 import numpy as np
-
-import numpy as np
-import torch
-import os
 import random
 from collections import deque
-from tqdm import tqdm
-
-import gymnasium as gym
-from gymnasium.wrappers import FlattenObservation
-from dm_control import suite
-from gymnasium.spaces import Box
-from gymnasium.utils.env_checker import check_env
-from gymnasium.utils.save_video import save_video
-from gymnasium.envs.registration import register
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from dmc import make_dmc_env
 
 class ReplayBuffer:
     def __init__(self, max_size=100000):
@@ -131,22 +114,44 @@ class DDPGAgent:
         self.critic_target.load_state_dict(self.critic.state_dict())
         print("load successfully")
 
-env_name="cartpole-balance"
-env = make_dmc_env(env_name, seed=0, flatten=True, use_pixels=False)
+            
+import gymnasium as gym
+from tqdm import tqdm
+
+env = gym.make("Pendulum-v1", render_mode="rgb_array")
 state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.shape[0]
 max_action = float(env.action_space.high[0])
 
 agent = DDPGAgent(state_dim, action_dim, max_action)
-checkpoint_dir = f"Q2/checkpoints/ddpg_{env_name}"
-agent.load(checkpoint_dir)
+agent.load("Q1/checkpoints/ddpg_pendulum")
+episodes = 8000
+for ep in tqdm(range(episodes)):
+    state, _ = env.reset()
+    ep_reward = 0
+    for t in range(200):
+        action = agent.select_action(state)
+        # exploration
+        action = (action + np.random.normal(0, 0.1, size=action_dim)).clip(-max_action, max_action)
+        next_state, reward, done, _, _ = env.step(action)
+        agent.replay_buffer.push(state, action, reward, next_state, float(done))
+        agent.train()
+
+        state = next_state
+        ep_reward += reward
+    if ep % 50 == 0:
+        agent.save("Q1/checkpoints/ddpg_pendulum")
+    print(f"Episode {ep}, Reward: {ep_reward:.2f}")
 
 
-# Do not modify the input of the 'act' function and the '__init__' function. 
-class Agent(object):
-    """Agent that acts randomly."""
-    def __init__(self):
-        self.action_space = gymnasium.spaces.Box(-1.0, 1.0, (1,), np.float64)
+import imageio
 
-    def act(self, observation):
-        return agent.select_action(observation)
+frames = []
+state, _ = env.reset()
+for _ in range(200):
+    frame = env.render()
+    frames.append(frame)
+    action = agent.select_action(state)
+    state, _, done, _, _ = env.step(action)
+
+imageio.mimsave("pendulum.gif", frames, fps=30)
