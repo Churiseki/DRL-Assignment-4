@@ -188,7 +188,7 @@ import matplotlib.pyplot as plt
 
 env_name="humanoid-walk"
 env = make_dmc_env(env_name, np.random.randint(0, 1000000), flatten=True, use_pixels=False)
-# env.seed(0)
+#  env.seed(0)
 
 state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.shape[0]
