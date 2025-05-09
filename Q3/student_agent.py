@@ -29,6 +29,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -176,8 +177,8 @@ class SACAgent:
         torch.save(self.critic.state_dict(), os.path.join(directory, "critic.pth"))
 
     def load(self, directory):
-        self.actor.load_state_dict(torch.load(os.path.join(directory, "actor.pth")))
-        self.critic.load_state_dict(torch.load(os.path.join(directory, "critic.pth")))
+        self.actor.load_state_dict(torch.load(os.path.join(directory, "actor.pth")), map_location=torch.device('cpu'))
+        self.critic.load_state_dict(torch.load(os.path.join(directory, "critic.pth")), map_location=torch.device('cpu'))
         self.critic_target.load_state_dict(self.critic.state_dict())
         print("Loaded model successfully")
 
