@@ -177,10 +177,12 @@ class SACAgent:
         torch.save(self.critic.state_dict(), os.path.join(directory, "critic.pth"))
 
     def load(self, directory):
-        self.actor.load_state_dict(torch.load(os.path.join(directory, "actor.pth")), map_location=torch.device('cpu'))
-        self.critic.load_state_dict(torch.load(os.path.join(directory, "critic.pth")), map_location=torch.device('cpu'))
+        map_location = torch.device("cpu") if not torch.cuda.is_available() else None
+        self.actor.load_state_dict(torch.load(os.path.join(directory, "actor.pth"), map_location=map_location))
+        self.critic.load_state_dict(torch.load(os.path.join(directory, "critic.pth"), map_location=map_location))
         self.critic_target.load_state_dict(self.critic.state_dict())
         print("Loaded model successfully")
+
 
 from tqdm import tqdm
 import numpy as np
