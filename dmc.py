@@ -86,7 +86,7 @@ def make_dmc_env(
 
     # 只有當 use_pixels 時才使用 render_mode
     render_mode = "rgb_array"# if use_pixels else None
-    render_kwargs = {"width": 256, "height": 256, "camera_id": 0} if use_pixels else {}
+    render_kwargs = {"width": 256, "height": 256, "camera_id": 0}# if use_pixels else {}
 
     env = DmControltoGymnasium(
         env, 

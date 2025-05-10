@@ -193,7 +193,7 @@ action_dim = env.action_space.shape[0]
 max_action = float(env.action_space.high[0])
 
 agent = SACAgent(state_dim, action_dim, max_action)
-# agent.load("checkpoints/sac_humanoid")
+agent.load("checkpoints/sac_humanoid")
 episodes = 10000
 batch_size = 64
 rewards = []
@@ -222,7 +222,7 @@ for ep in tqdm(range(episodes)):
         plt.title(f"Episode {ep+1} - Reward Trend")
         plt.legend()
         plt.grid(True)
-        plt.savefig(f"Q3/fig/sac_humanoid_rewards_ep{ep+1}.png")
+        plt.savefig(f"Q3/fig/sac_humanoid_rewards_ep{ep+5001}.png")
         plt.close()
     rewards.append(ep_reward)
     avg_rewards.append(np.mean(rewards[-100:]))
