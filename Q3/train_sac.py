@@ -206,7 +206,8 @@ for ep in tqdm(range(episodes)):
         next_state, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
         agent.replay_buffer.push(state.copy(), action, reward, next_state.copy(), float(done))
-        agent.train(batch_size=batch_size)
+        if ep > 1000:
+            agent.train(batch_size=batch_size)
         state = next_state
         ep_reward += reward
         if done:
